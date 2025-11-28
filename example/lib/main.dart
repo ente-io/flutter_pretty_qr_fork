@@ -51,25 +51,53 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
   @protected
   late PrettyQrDecoration decoration;
 
+  /// Default QR decoration configuration:
+  /// - Dots style for the main QR code modules (black)
+  /// - Slightly rounded corners for finder patterns (not complete circles)
+  /// - Thick outer border, smaller circular inner dot for finder patterns
+  static const kDefaultQrDecoration = PrettyQrDecoration(
+    shape: PrettyQrShape.custom(
+      // Main QR dots - black circular dots
+      PrettyQrDotsSymbol(
+        color: Colors.black,
+        unifiedFinderPattern: false, // Let custom finderPattern handle it
+        unifiedAlignmentPatterns: false,
+      ),
+      // Finder patterns (3 corner squares):
+      // - Symmetric outer ring (same border radius on outer & inner edges)
+      // - Circular inner dot
+      // - Purple outer ring, black inner dot
+      finderPattern: PrettyQrSquaresSymbol(
+        color: Colors.black, // Inner dot color
+        rounding: 0.5, // Outer ring corner radius (0=sharp, 1=circular)
+        unifiedFinderPattern: true,
+        finderPatternOuterThickness: 1.4, // Outer ring thickness
+        finderPatternOuterColor: Colors.purple, // Purple outer ring
+        finderPatternInnerDotSize: 0.8, // Inner dot size
+        finderPatternInnerRounding: 1.0, // Circular inner dot
+      ),
+      // Alignment patterns - square layout with circular individual modules
+      alignmentPatterns: PrettyQrSquaresSymbol(
+        color: Colors.black,
+        rounding: 1.0, // Fully circular individual modules
+      ),
+    ),
+    background: Colors.transparent,
+    quietZone: PrettyQrQuietZone.zero,
+  );
+
   @override
   void initState() {
     super.initState();
 
     qrCode = QrCode.fromData(
       data: 'https://pub.dev/packages/pretty_qr_code',
-      errorCorrectLevel: QrErrorCorrectLevel.H,
+      errorCorrectLevel: QrErrorCorrectLevel.L, // Low error correction = fewer dots
     );
 
     qrImage = QrImage(qrCode);
 
-    decoration = const PrettyQrDecoration(
-      shape: PrettyQrSmoothSymbol(
-        color: _PrettyQrSettings.kDefaultQrDecorationBrush,
-      ),
-      image: _PrettyQrSettings.kDefaultQrDecorationImage,
-      background: Colors.transparent,
-      quietZone: PrettyQrQuietZone.zero,
-    );
+    decoration = kDefaultQrDecoration;
   }
 
   @override
