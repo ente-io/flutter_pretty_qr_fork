@@ -46,7 +46,9 @@ class PrettyQrDotsSymbol implements PrettyQrShape {
     final moduleDimension = canvasBounds.longestSide / matrix.version.dimension;
 
     final dotRadius = moduleDimension / 2;
-    final effectiveDotRadius = clampDouble(dotRadius * density, 1.0, dotRadius);
+    final minDotRadius = dotRadius < 1 ? dotRadius * 0.1 : 1.0;
+    final effectiveDotRadius =
+        clampDouble(dotRadius * density, minDotRadius, dotRadius);
 
     final brush = PrettyQrBrush.from(color);
     final dotPaint = brush.toPaint(

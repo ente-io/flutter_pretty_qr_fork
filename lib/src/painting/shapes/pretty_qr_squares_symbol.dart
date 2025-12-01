@@ -91,9 +91,14 @@ class PrettyQrSquaresSymbol implements PrettyQrShape {
   })  : assert(density >= 0.0 && density <= 1.0),
         assert(rounding >= 0.0 && rounding <= 1.0),
         assert(finderPatternOuterThickness > 0.0),
-        assert(finderPatternInnerDotSize >= 0.0 && finderPatternInnerDotSize <= 2.0),
-        assert(finderPatternInnerRounding == null || (finderPatternInnerRounding >= 0.0 && finderPatternInnerRounding <= 1.0)),
-        assert(alignmentPatternInnerRounding == null || (alignmentPatternInnerRounding >= 0.0 && alignmentPatternInnerRounding <= 1.0));
+        assert(finderPatternInnerDotSize >= 0.0 &&
+            finderPatternInnerDotSize <= 2.0),
+        assert(finderPatternInnerRounding == null ||
+            (finderPatternInnerRounding >= 0.0 &&
+                finderPatternInnerRounding <= 1.0)),
+        assert(alignmentPatternInnerRounding == null ||
+            (alignmentPatternInnerRounding >= 0.0 &&
+                alignmentPatternInnerRounding <= 1.0));
 
   @override
   void paint(PrettyQrPaintingContext context) {
@@ -120,35 +125,38 @@ class PrettyQrSquaresSymbol implements PrettyQrShape {
       );
       strokePaint.style = PaintingStyle.stroke;
       // Apply outer thickness multiplier
-      strokePaint.strokeWidth = (moduleDimension / 1.5) * finderPatternOuterThickness;
+      strokePaint.strokeWidth =
+          (moduleDimension / 1.5) * finderPatternOuterThickness;
 
       // Use separate rounding for inner dot if specified
       final innerRounding = finderPatternInnerRounding ?? rounding;
-      
+
       // Check if inner dot should be a perfect circle
       final isInnerDotCircular = innerRounding >= 0.95;
-      
+
       // Outer ring thickness
-      final ringThickness = (moduleDimension / 1.5) * finderPatternOuterThickness;
-      
+      final ringThickness =
+          (moduleDimension / 1.5) * finderPatternOuterThickness;
+
       // Calculate corner radius for outer ring (same for outer and inner edges = symmetric)
       // rounding 0 = sharp corners, rounding 1 = fully rounded
       final outerRingCornerRadius = moduleDimension * 3.5 * rounding;
-      
+
       // Inner dot size
       final innerDotSize = moduleDimension * 3.0 * finderPatternInnerDotSize;
-      
+
       // Inner dot corner radius
       final innerDotCornerRadius = moduleDimension * 1.5 * innerRounding;
 
       for (final pattern in matrix.positionDetectionPatterns) {
         final patternRect = pattern.resolveRect(context);
         final center = patternRect.center;
-        
+
         // Draw outer ring using path (outer RRect - inner RRect)
         // Inner radius = outer radius - thickness for visually symmetric corners
-        final innerRingCornerRadius = (outerRingCornerRadius - ringThickness).clamp(0.0, double.infinity);
-        
+        final innerRingCornerRadius =
+            (outerRingCornerRadius - ringThickness).clamp(0.0, double.infinity);
+
         final outerRRect = RRect.fromRectAndRadius(
           patternRect,
           Radius.circular(outerRingCornerRadius),
@@ -157,14 +165,15 @@ class PrettyQrSquaresSymbol implements PrettyQrShape {
           patternRect.deflate(ringThickness),
           Radius.circular(innerRingCornerRadius),
         );
-        
+
         final ringPath = Path()
           ..addRRect(outerRRect)
           ..addRRect(innerRingRRect)
           ..fillType = PathFillType.evenOdd;
-        
-        context.canvas.drawPath(ringPath, fillPaint..color = outerBrush.toPaint(canvasBounds).color);
-        
+
+        context.canvas.drawPath(ringPath,
+            fillPaint..color = outerBrush.toPaint(canvasBounds).color);
+
         // Reset fill paint color for inner dot
         fillPaint.color = brush.toPaint(canvasBounds).color;
 
@@ -220,7 +229,8 @@ class PrettyQrSquaresSymbol implements PrettyQrShape {
         } else {
           final innerDotRRect = RRect.fromRectAndRadius(
             patternRect,
-            Radius.circular(moduleDimension * clampDouble(alignmentInnerRounding * 1.4, 0, 1.4)),
+            Radius.circular(moduleDimension *
+                clampDouble(alignmentInnerRounding * 1.4, 0, 1.4)),
           ).deflate(moduleDimension * 1.8);
           context.canvas.drawRRect(innerDotRRect, fillPaint);
         }
@@ -229,7 +239,9 @@ class PrettyQrSquaresSymbol implements PrettyQrShape {
 
     final radius = moduleDimension / 2;
     final effectiveRadius = clampDouble(radius * rounding, 0, radius);
-    final effectiveDensity = radius - clampDouble(radius * density, 1, radius);
+    final minDensity = radius < 1 ? radius * 0.1 : 1.0;
+    final effectiveDensity =
+        radius - clampDouble(radius * density, minDensity, radius);
 
     for (final module in context.matrix) {
       if (!module.isDark) continue;
